@@ -129,6 +129,27 @@
   .settings-row + .settings-row{margin-top:8px;}
   .settings-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);max-width:none;}
 
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .stepper-btn{
+    width:34px;
+    height:34px;
+    padding:0;
+    font-size:1.2rem;
+    line-height:1;
+    border-radius:8px;
+  }
+  .stepper-value{
+    min-width:40px;
+    text-align:center;
+    font-size:1rem;
+    font-weight:700;
+    color:var(--text);
+  }
+
   .house-line{
     font-size:.85rem;
     color:var(--accent);
@@ -296,7 +317,11 @@
     </div>
     <div class="settings-row" style="margin-top:12px;">
       <span>יחידת כניסה:</span>
-      <input type="number" id="buyinUnit" value="50" min="1" step="1">
+      <div class="stepper">
+        <button type="button" id="buyinUnitMinus" class="stepper-btn">−</button>
+        <span id="buyinUnitValue" class="stepper-value">50</span>
+        <button type="button" id="buyinUnitPlus" class="stepper-btn">+</button>
+      </div>
       <span>₪</span>
     </div>
     <div class="settings-row">
@@ -369,7 +394,9 @@
   var els = {
     newPlayerName: document.getElementById("newPlayerName"),
     addPlayerBtn: document.getElementById("addPlayerBtn"),
-    buyinUnit: document.getElementById("buyinUnit"),
+    buyinUnitValue: document.getElementById("buyinUnitValue"),
+    buyinUnitMinus: document.getElementById("buyinUnitMinus"),
+    buyinUnitPlus: document.getElementById("buyinUnitPlus"),
     chipsPerShekel: document.getElementById("chipsPerShekel"),
     houseEnabled: document.getElementById("houseEnabled"),
     houseFeeRow: document.getElementById("houseFeeRow"),
@@ -445,7 +472,8 @@
 
   // ---------- render: setup / play ----------
   function render(){
-    els.buyinUnit.value = state.buyinUnit;
+    els.buyinUnitValue.textContent = state.buyinUnit;
+    els.buyinUnitMinus.disabled = state.buyinUnit <= 50;
     els.chipsPerShekel.value = state.chipsPerShekel;
     els.houseEnabled.checked = !!state.houseEnabled;
     els.houseFee.value = state.houseFee;
@@ -748,12 +776,17 @@
     if(e.key === "Enter") els.addPlayerBtn.click();
   });
 
-  els.buyinUnit.addEventListener("input", function(){
-    var v = Number(els.buyinUnit.value);
-    state.buyinUnit = v > 0 ? v : 1;
+  var BUYIN_STEP = 50;
+  els.buyinUnitMinus.onclick = function(){
+    state.buyinUnit = Math.max(BUYIN_STEP, state.buyinUnit - BUYIN_STEP);
     saveState();
     render();
-  });
+  };
+  els.buyinUnitPlus.onclick = function(){
+    state.buyinUnit = state.buyinUnit + BUYIN_STEP;
+    saveState();
+    render();
+  };
 
   els.chipsPerShekel.addEventListener("input", function(){
     var v = Number(els.chipsPerShekel.value);
