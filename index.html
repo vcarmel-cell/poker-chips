@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#153629">
+<title>קניית ציפים</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  :root{
+    --bg:#0f2a20;
+    --bg-alt:#153629;
+    --panel:#173a2c;
+    --panel-2:#1d4433;
+    --line:#2c5a44;
+    --text:#f0ece0;
+    --text-dim:#a9c2b3;
+    --accent:#e0b64a;
+    --accent-dark:#b6902f;
+    --danger:#c65b4e;
+    --danger-dark:#9c4238;
+    --good:#5fa876;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    min-height:100vh;
+    padding-bottom:40px;
+  }
+  header{
+    padding:18px 16px 14px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    background:var(--bg-alt);
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  header h1{
+    margin:0 0 2px;
+    font-size:1.3rem;
+    font-weight:700;
+    letter-spacing:.3px;
+  }
+  header .pot{
+    font-size:.92rem;
+    color:var(--text-dim);
+  }
+  header .pot b{color:var(--accent);font-size:1.05rem;}
+  main{
+    max-width:520px;
+    margin:0 auto;
+    padding:14px 12px;
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .panel h2{
+    margin:0 0 10px;
+    font-size:1rem;
+    color:var(--text-dim);
+    font-weight:600;
+  }
+  .row{
+    display:flex;
+    gap:8px;
+  }
+  input[type=text], input[type=number]{
+    flex:1;
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:8px;
+    padding:11px 12px;
+    font-size:1rem;
+    min-width:0;
+  }
+  input[type=text]:focus, input[type=number]:focus{
+    outline:none;
+    border-color:var(--accent-dark);
+  }
+  button{
+    font-family:inherit;
+    font-size:.95rem;
+    font-weight:600;
+    border:none;
+    border-radius:8px;
+    padding:11px 16px;
+    cursor:pointer;
+    color:var(--bg);
+    background:var(--accent);
+  }
+  button:active{transform:scale(0.97);}
+  button.secondary{
+    background:var(--panel-2);
+    color:var(--text);
+    border:1px solid var(--line);
+  }
+  button.danger{
+    background:var(--danger);
+    color:#fff;
+  }
+  button.ghost{
+    background:transparent;
+    color:var(--text-dim);
+    border:1px solid var(--line);
+    padding:6px 10px;
+    font-size:.85rem;
+  }
+  button:disabled{opacity:.4;cursor:default;}
+
+  .settings-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:.9rem;
+    color:var(--text-dim);
+  }
+  .settings-row input{max-width:90px;text-align:center;}
+  .settings-row + .settings-row{margin-top:8px;}
+  .settings-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);max-width:none;}
+
+  .house-line{
+    font-size:.85rem;
+    color:var(--accent);
+    margin-bottom:10px;
+  }
+
+  .quick-buyins{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:8px;
+  }
+  .quick-buyins button{
+    flex:1 1 0;
+    min-width:60px;
+    background:var(--accent);
+    color:var(--bg);
+    padding:9px 6px;
+    font-size:.9rem;
+  }
+
+  .player{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:10px;
+    background:var(--bg-alt);
+  }
+  .player-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+  .player-name{
+    font-weight:700;
+    font-size:1.05rem;
+  }
+  .player-stats{
+    font-size:.82rem;
+    color:var(--text-dim);
+    margin-top:2px;
+  }
+  .player-actions{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .player-detail{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed var(--line);
+    display:none;
+  }
+  .player-detail.open{display:block;}
+  .buyin-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .buyin-chip{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:5px 8px 5px 6px;
+    font-size:.82rem;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .buyin-chip button{
+    background:none;
+    color:var(--danger);
+    border:none;
+    padding:0 2px;
+    font-size:.9rem;
+    line-height:1;
+  }
+  .custom-row{
+    display:flex;
+    gap:6px;
+  }
+  .custom-row input{max-width:110px;}
+
+  .empty{
+    color:var(--text-dim);
+    font-size:.9rem;
+    text-align:center;
+    padding:10px 0;
+  }
+
+  .cashout-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .cashout-row:last-child{border-bottom:none;}
+  .cashout-row .name{font-weight:600;}
+  .cashout-row .buyin-sub{font-size:.8rem;color:var(--text-dim);}
+  .cashout-row input{max-width:100px;text-align:center;}
+
+  .balance-warn{
+    font-size:.85rem;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-top:10px;
+  }
+  .balance-warn.bad{background:rgba(198,91,78,.18);color:#f0a99e;border:1px solid var(--danger-dark);}
+  .balance-warn.ok{background:rgba(95,168,118,.15);color:#a9dab9;border:1px solid var(--good);}
+
+  .result-table{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:14px;}
+  .result-table th, .result-table td{padding:7px 4px;text-align:right;border-bottom:1px solid var(--line);}
+  .result-table th{color:var(--text-dim);font-weight:600;font-size:.8rem;}
+  .plus{color:var(--good);}
+  .minus{color:var(--danger);}
+
+  .tx{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    font-size:.95rem;
+  }
+  .tx .arrow{color:var(--accent);font-weight:700;}
+  .tx .amt{margin-inline-start:auto;font-weight:700;color:var(--accent);}
+
+  .actions-bottom{
+    display:flex;
+    gap:8px;
+    margin-top:16px;
+  }
+  .actions-bottom button{flex:1;}
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:.75rem;
+    margin-top:20px;
+    padding:0 16px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>קניית ציפים</h1>
+  <div class="pot">סה"כ בקופה: <b id="potTotal">0</b> ₪</div>
+</header>
+
+<main>
+
+  <section class="panel" id="setupPanel">
+    <h2>שחקנים</h2>
+    <div class="row">
+      <input type="text" id="newPlayerName" placeholder="שם שחקן" maxlength="30">
+      <button id="addPlayerBtn">הוספה</button>
+    </div>
+    <div class="settings-row" style="margin-top:12px;">
+      <span>יחידת כניסה:</span>
+      <input type="number" id="buyinUnit" value="50" min="1" step="1">
+      <span>₪</span>
+    </div>
+    <div class="settings-row">
+      <span>ציפים לכל ₪1:</span>
+      <input type="number" id="chipsPerShekel" value="4" min="1" step="1">
+      <span>ציפים</span>
+    </div>
+    <div class="settings-row">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="houseEnabled">
+        <span>בית מארח - עמלה מהכניסה הראשונה של כל שחקן</span>
+      </label>
+    </div>
+    <div class="settings-row" id="houseFeeRow" style="display:none;">
+      <span>עמלה לכניסה ראשונה:</span>
+      <input type="number" id="houseFee" value="100" min="1" step="1">
+      <span>ציפים</span>
+    </div>
+  </section>
+
+  <section class="panel" id="playersPanel">
+    <h2>מהלך הערב</h2>
+    <div class="house-line" id="houseCollectedLine" style="display:none;"></div>
+    <div id="playersList"></div>
+    <div class="empty" id="noPlayers">עוד לא הוספת שחקנים</div>
+  </section>
+
+  <div class="actions-bottom" id="closeNightBar">
+    <button id="closeNightBtn" class="secondary" disabled>סגירת הערב וחישוב</button>
+  </div>
+
+  <section class="panel" id="cashoutPanel" style="display:none;">
+    <h2>ציפים בסיום הערב</h2>
+    <div class="pot" style="text-align:right;margin-bottom:2px;">סה"כ ציפים שחולקו: <b id="chipsIssuedTotal" style="color:var(--accent);">0</b></div>
+    <div class="house-line" id="houseFeeCashoutLine" style="display:none;margin-top:0;margin-bottom:10px;"></div>
+    <div id="cashoutList"></div>
+    <div id="balanceMsg"></div>
+    <div class="actions-bottom">
+      <button id="backToPlayBtn" class="secondary">חזרה למשחק</button>
+      <button id="calcBtn">חישוב תשלומים</button>
+    </div>
+  </section>
+
+  <section class="panel" id="resultPanel" style="display:none;">
+    <h2>תוצאות</h2>
+    <table class="result-table" id="resultTable"></table>
+    <h2 style="margin-top:4px;">מי מעביר למי</h2>
+    <div id="txList"></div>
+  </section>
+
+  <div class="actions-bottom">
+    <button id="newGameBtn" class="danger">משחק חדש</button>
+  </div>
+
+</main>
+
+<footer>הנתונים נשמרים בדפדפן הזה בלבד, לא נשלחים לשום מקום.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "pokerChips.game.v1";
+
+  var HOUSE_NAME = "הבית";
+
+  var state = loadState() || { players: [], buyinUnit: 50, chipsPerShekel: 4, houseEnabled: false, houseFee: 100, phase: "play" };
+  // phase: "play" | "cashout" | "result"
+
+  var els = {
+    newPlayerName: document.getElementById("newPlayerName"),
+    addPlayerBtn: document.getElementById("addPlayerBtn"),
+    buyinUnit: document.getElementById("buyinUnit"),
+    chipsPerShekel: document.getElementById("chipsPerShekel"),
+    houseEnabled: document.getElementById("houseEnabled"),
+    houseFeeRow: document.getElementById("houseFeeRow"),
+    houseFee: document.getElementById("houseFee"),
+    houseCollectedLine: document.getElementById("houseCollectedLine"),
+    houseFeeCashoutLine: document.getElementById("houseFeeCashoutLine"),
+    playersList: document.getElementById("playersList"),
+    noPlayers: document.getElementById("noPlayers"),
+    closeNightBar: document.getElementById("closeNightBar"),
+    closeNightBtn: document.getElementById("closeNightBtn"),
+    potTotal: document.getElementById("potTotal"),
+    setupPanel: document.getElementById("setupPanel"),
+    playersPanel: document.getElementById("playersPanel"),
+    cashoutPanel: document.getElementById("cashoutPanel"),
+    resultPanel: document.getElementById("resultPanel"),
+    cashoutList: document.getElementById("cashoutList"),
+    chipsIssuedTotal: document.getElementById("chipsIssuedTotal"),
+    balanceMsg: document.getElementById("balanceMsg"),
+    backToPlayBtn: document.getElementById("backToPlayBtn"),
+    calcBtn: document.getElementById("calcBtn"),
+    resultTable: document.getElementById("resultTable"),
+    txList: document.getElementById("txList"),
+    newGameBtn: document.getElementById("newGameBtn")
+  };
+
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function uid(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  }
+  function fmt(n){
+    n = Math.round(n * 100) / 100;
+    return (n % 1 === 0) ? n.toFixed(0) : n.toFixed(2);
+  }
+  function playerTotal(p){
+    return p.buyins.reduce(function(s,b){ return s + b; }, 0);
+  }
+  function potTotal(){
+    return state.players.reduce(function(s,p){ return s + playerTotal(p); }, 0);
+  }
+  function chipsIssued(p){
+    return Math.round(playerTotal(p) * state.chipsPerShekel);
+  }
+  function totalChipsIssued(){
+    return state.players.reduce(function(s,p){ return s + chipsIssued(p); }, 0);
+  }
+  function cashoutValue(p){
+    return (Number(p.chipsLeft) || 0) / state.chipsPerShekel;
+  }
+  function playerChipsHeld(p){
+    return chipsIssued(p) - (p.houseCharged ? (p.houseFeeAmount||0) : 0);
+  }
+  function houseChipsTotal(){
+    return state.players.reduce(function(s,p){ return s + (p.houseCharged ? (p.houseFeeAmount||0) : 0); }, 0);
+  }
+  function houseValue(){
+    return houseChipsTotal() / state.chipsPerShekel;
+  }
+  function addBuyin(p, amt){
+    if(state.houseEnabled && p.buyins.length === 0 && !p.houseCharged){
+      p.houseCharged = true;
+      p.houseFeeAmount = Number(state.houseFee) || 0;
+    }
+    p.buyins.push(amt);
+  }
+
+  // ---------- render: setup / play ----------
+  function render(){
+    els.buyinUnit.value = state.buyinUnit;
+    els.chipsPerShekel.value = state.chipsPerShekel;
+    els.houseEnabled.checked = !!state.houseEnabled;
+    els.houseFee.value = state.houseFee;
+    els.houseFeeRow.style.display = state.houseEnabled ? "" : "none";
+    els.potTotal.textContent = fmt(potTotal());
+
+    els.setupPanel.style.display = state.phase === "play" ? "" : "none";
+    els.playersPanel.style.display = state.phase === "play" ? "" : "none";
+    els.closeNightBar.style.display = state.phase === "play" ? "" : "none";
+    els.cashoutPanel.style.display = state.phase === "cashout" ? "" : "none";
+    els.resultPanel.style.display = state.phase === "result" ? "" : "none";
+
+    if(state.phase === "play") renderPlayers();
+    if(state.phase === "cashout") renderCashout();
+    if(state.phase === "result") renderResult();
+
+    els.closeNightBtn.disabled = state.players.length < 2;
+  }
+
+  function renderPlayers(){
+    els.playersList.innerHTML = "";
+    els.noPlayers.style.display = state.players.length ? "none" : "";
+
+    if(state.houseEnabled){
+      els.houseCollectedLine.style.display = "";
+      els.houseCollectedLine.textContent = "נאספו לבית: "+houseChipsTotal()+" ציפים ("+fmt(houseValue())+" ₪)";
+    } else {
+      els.houseCollectedLine.style.display = "none";
+    }
+
+    state.players.forEach(function(p){
+      var div = document.createElement("div");
+      div.className = "player";
+
+      var top = document.createElement("div");
+      top.className = "player-top";
+
+      var statsLine = playerTotal(p)+' ₪ &middot; '+p.buyins.length+' כניסות &middot; '+playerChipsHeld(p)+' ציפים';
+      if(p.houseCharged){
+        statsLine += ' <span style="color:var(--accent);">(מתוכם '+p.houseFeeAmount+' לבית)</span>';
+      }
+      var left = document.createElement("div");
+      left.innerHTML = '<div class="player-name">'+escapeHtml(p.name)+'</div>' +
+        '<div class="player-stats">'+statsLine+'</div>';
+
+      var right = document.createElement("div");
+      right.className = "player-actions";
+
+      var moreBtn = document.createElement("button");
+      moreBtn.className = "ghost";
+      moreBtn.textContent = p._open ? "סגירה" : "עוד";
+      moreBtn.onclick = function(){
+        p._open = !p._open;
+        render();
+      };
+
+      right.appendChild(moreBtn);
+      top.appendChild(left);
+      top.appendChild(right);
+      div.appendChild(top);
+
+      var unit = Number(state.buyinUnit) || 50;
+      var quickRow = document.createElement("div");
+      quickRow.className = "quick-buyins";
+      [1,2,3,4].forEach(function(mult){
+        var amt = unit * mult;
+        var btn = document.createElement("button");
+        btn.textContent = "+"+amt;
+        btn.onclick = function(){
+          addBuyin(p, amt);
+          saveState(); render();
+        };
+        quickRow.appendChild(btn);
+      });
+      div.appendChild(quickRow);
+
+      if(p._open){
+        var detail = document.createElement("div");
+        detail.className = "player-detail open";
+
+        var list = document.createElement("div");
+        list.className = "buyin-list";
+        p.buyins.forEach(function(amt, idx){
+          var chip = document.createElement("span");
+          chip.className = "buyin-chip";
+          var rmBtn = document.createElement("button");
+          rmBtn.textContent = "✕";
+          rmBtn.onclick = function(){
+            p.buyins.splice(idx,1);
+            if(p.buyins.length === 0){
+              p.houseCharged = false;
+              p.houseFeeAmount = 0;
+            }
+            saveState(); render();
+          };
+          chip.textContent = amt + " ₪ ";
+          chip.appendChild(rmBtn);
+          list.appendChild(chip);
+        });
+        if(!p.buyins.length){
+          var noneSpan = document.createElement("div");
+          noneSpan.className = "empty";
+          noneSpan.style.padding = "0 0 6px";
+          noneSpan.textContent = "אין עדיין כניסות";
+          list.appendChild(noneSpan);
+        }
+        detail.appendChild(list);
+
+        var customRow = document.createElement("div");
+        customRow.className = "custom-row";
+        var customInput = document.createElement("input");
+        customInput.type = "number";
+        customInput.min = "1";
+        customInput.placeholder = "סכום אחר";
+        var customBtn = document.createElement("button");
+        customBtn.className = "secondary";
+        customBtn.textContent = "הוספה";
+        customBtn.onclick = function(){
+          var v = Number(customInput.value);
+          if(v > 0){
+            addBuyin(p, v);
+            saveState(); render();
+          }
+        };
+        customRow.appendChild(customInput);
+        customRow.appendChild(customBtn);
+        detail.appendChild(customRow);
+
+        var removeRow = document.createElement("div");
+        removeRow.style.marginTop = "10px";
+        var removePlayerBtn = document.createElement("button");
+        removePlayerBtn.className = "ghost";
+        removePlayerBtn.textContent = "הסרת שחקן";
+        removePlayerBtn.onclick = function(){
+          if(confirm('להסיר את '+p.name+' מהמשחק?')){
+            state.players = state.players.filter(function(pp){ return pp.id !== p.id; });
+            saveState(); render();
+          }
+        };
+        removeRow.appendChild(removePlayerBtn);
+        detail.appendChild(removeRow);
+
+        div.appendChild(detail);
+      }
+
+      els.playersList.appendChild(div);
+    });
+  }
+
+  function escapeHtml(s){
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ---------- cashout ----------
+  function renderCashout(){
+    els.chipsIssuedTotal.textContent = totalChipsIssued();
+    if(state.houseEnabled && houseChipsTotal() > 0){
+      els.houseFeeCashoutLine.style.display = "";
+      els.houseFeeCashoutLine.textContent = "מתוכם לבית: "+houseChipsTotal()+" ציפים ("+fmt(houseValue())+" ₪)";
+    } else {
+      els.houseFeeCashoutLine.style.display = "none";
+    }
+    els.cashoutList.innerHTML = "";
+    state.players.forEach(function(p){
+      var row = document.createElement("div");
+      row.className = "cashout-row";
+      row.innerHTML =
+        '<div><div class="name">'+escapeHtml(p.name)+'</div>' +
+        '<div class="buyin-sub">קנה ב-'+playerTotal(p)+' ₪ &middot; קיבל '+playerChipsHeld(p)+' ציפים</div></div>';
+
+      var inputWrap = document.createElement("div");
+      inputWrap.style.textAlign = "left";
+
+      var input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "1";
+      input.placeholder = "ציפים";
+      input.value = (p.chipsLeft === undefined || p.chipsLeft === null) ? "" : p.chipsLeft;
+
+      var valueHint = document.createElement("div");
+      valueHint.style.fontSize = ".78rem";
+      valueHint.style.color = "var(--text-dim)";
+      valueHint.style.marginTop = "3px";
+      function updateHint(){
+        valueHint.textContent = (p.chipsLeft === undefined || p.chipsLeft === null || p.chipsLeft === "") ? "" : "= "+fmt(cashoutValue(p))+" ₪";
+      }
+      updateHint();
+
+      input.oninput = function(){
+        p.chipsLeft = input.value === "" ? null : Number(input.value);
+        saveState();
+        updateHint();
+        updateBalanceMsg();
+      };
+      inputWrap.appendChild(input);
+      inputWrap.appendChild(valueHint);
+      row.appendChild(inputWrap);
+      els.cashoutList.appendChild(row);
+    });
+    updateBalanceMsg();
+  }
+
+  function chipsLeftSum(){
+    return state.players.reduce(function(s,p){ return s + (Number(p.chipsLeft)||0); }, 0);
+  }
+
+  function updateBalanceMsg(){
+    var issued = totalChipsIssued();
+    var left = chipsLeftSum() + houseChipsTotal();
+    var diff = Math.round(left - issued);
+    var allFilled = state.players.every(function(p){ return p.chipsLeft !== undefined && p.chipsLeft !== null && p.chipsLeft !== ""; });
+
+    var msg;
+    if(!allFilled){
+      msg = '<div class="balance-warn">יש למלא כמות ציפים לכל השחקנים ('+left+' מתוך '+issued+' ציפים)</div>';
+    } else if(diff === 0){
+      msg = '<div class="balance-warn ok">הכמות תואמת: '+left+' ציפים &#10003;</div>';
+    } else {
+      msg = '<div class="balance-warn bad">'+
+        (diff > 0 ? 'יש '+diff+' ציפים עודף' : 'חסרים '+(-diff)+' ציפים') +
+        ' לעומת מה שחולק ('+issued+' ציפים). כדאי לבדוק את הספירה.</div>';
+    }
+    els.balanceMsg.innerHTML = msg;
+    els.calcBtn.disabled = !allFilled;
+  }
+
+  // ---------- settlement ----------
+  function computeSettlement(){
+    var nets = state.players.map(function(p){
+      return { name: p.name, net: Math.round((cashoutValue(p) - playerTotal(p)) * 100) };
+    });
+
+    if(state.houseEnabled && houseChipsTotal() > 0){
+      nets.push({ name: HOUSE_NAME, net: Math.round(houseValue() * 100) });
+    }
+
+    var creditors = nets.filter(function(n){ return n.net > 0; }).map(function(n){ return {name:n.name, amt:n.net}; });
+    var debtors = nets.filter(function(n){ return n.net < 0; }).map(function(n){ return {name:n.name, amt:-n.net}; });
+
+    creditors.sort(function(a,b){ return b.amt - a.amt; });
+    debtors.sort(function(a,b){ return b.amt - a.amt; });
+
+    var tx = [];
+    var ci = 0, di = 0;
+    while(ci < creditors.length && di < debtors.length){
+      var c = creditors[ci], d = debtors[di];
+      var amt = Math.min(c.amt, d.amt);
+      if(amt > 0){
+        tx.push({ from: d.name, to: c.name, amt: amt/100 });
+      }
+      c.amt -= amt; d.amt -= amt;
+      if(c.amt <= 0) ci++;
+      if(d.amt <= 0) di++;
+    }
+    return { nets: nets.map(function(n){ return {name:n.name, net:n.net/100}; }), tx: tx };
+  }
+
+  function renderResult(){
+    var settlement = computeSettlement();
+
+    var html = "<tr><th>שחקן</th><th>קנה</th><th>ציפים</th><th>שווה</th><th>רווח/הפסד</th></tr>";
+    state.players.forEach(function(p){
+      var net = settlement.nets.find(function(n){ return n.name === p.name; }).net;
+      html += "<tr><td>"+escapeHtml(p.name)+"</td><td>"+fmt(playerTotal(p))+"</td><td>"+(Number(p.chipsLeft)||0)+"</td><td>"+fmt(cashoutValue(p))+"</td>" +
+        "<td class=\""+(net>=0?"plus":"minus")+"\">"+(net>=0?"+":"")+fmt(net)+"</td></tr>";
+    });
+    if(state.houseEnabled && houseChipsTotal() > 0){
+      html += "<tr><td>"+escapeHtml(HOUSE_NAME)+"</td><td>0</td><td>"+houseChipsTotal()+"</td><td>"+fmt(houseValue())+"</td>" +
+        "<td class=\"plus\">+"+fmt(houseValue())+"</td></tr>";
+    }
+    els.resultTable.innerHTML = html;
+
+    els.txList.innerHTML = "";
+    if(!settlement.tx.length){
+      els.txList.innerHTML = '<div class="empty">אין תשלומים לביצוע</div>';
+    } else {
+      settlement.tx.forEach(function(t){
+        var row = document.createElement("div");
+        row.className = "tx";
+        row.innerHTML = '<span>'+escapeHtml(t.from)+'</span><span class="arrow">&larr;</span><span>'+escapeHtml(t.to)+'</span>' +
+          '<span class="amt">'+fmt(t.amt)+' ₪</span>';
+        els.txList.appendChild(row);
+      });
+    }
+  }
+
+  // ---------- events ----------
+  els.addPlayerBtn.onclick = function(){
+    var name = els.newPlayerName.value.trim();
+    if(!name) return;
+    state.players.push({ id: uid(), name: name, buyins: [], chipsLeft: null, houseCharged: false, houseFeeAmount: 0, _open:false });
+    els.newPlayerName.value = "";
+    saveState(); render();
+    els.newPlayerName.focus();
+  };
+  els.newPlayerName.addEventListener("keydown", function(e){
+    if(e.key === "Enter") els.addPlayerBtn.click();
+  });
+
+  els.buyinUnit.addEventListener("input", function(){
+    var v = Number(els.buyinUnit.value);
+    state.buyinUnit = v > 0 ? v : 1;
+    saveState();
+    render();
+  });
+
+  els.chipsPerShekel.addEventListener("input", function(){
+    var v = Number(els.chipsPerShekel.value);
+    state.chipsPerShekel = v > 0 ? v : 1;
+    saveState();
+    render();
+  });
+
+  els.houseEnabled.addEventListener("change", function(){
+    state.houseEnabled = els.houseEnabled.checked;
+    saveState();
+    render();
+  });
+
+  els.houseFee.addEventListener("input", function(){
+    var v = Number(els.houseFee.value);
+    state.houseFee = v > 0 ? v : 1;
+    saveState();
+    render();
+  });
+
+  els.closeNightBtn.onclick = function(){
+    state.phase = "cashout";
+    saveState(); render();
+  };
+
+  els.backToPlayBtn.onclick = function(){
+    state.phase = "play";
+    saveState(); render();
+  };
+
+  els.calcBtn.onclick = function(){
+    state.phase = "result";
+    saveState(); render();
+  };
+
+  els.newGameBtn.onclick = function(){
+    if(confirm("להתחיל משחק חדש? כל הנתונים הנוכחיים יימחקו.")){
+      state = { players: [], buyinUnit: state.buyinUnit || 50, chipsPerShekel: state.chipsPerShekel || 4, houseEnabled: state.houseEnabled || false, houseFee: state.houseFee || 100, phase: "play" };
+      saveState(); render();
+    }
+  };
+
+  render();
+})();
+</script>
+
+</body>
+</html>
